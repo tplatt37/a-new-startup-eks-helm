@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-a-new-startup"
+  namespace: mynamespace
+  labels:
+    app: a-new-startup
+spec:
+  replicas: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: a-new-startup
+  template:
+    metadata:
+      labels:
+        app: a-new-startup
+    spec:
+      # This should stay commented out for the 06 CI/CD demo
+      # It's used later ...
+      #serviceAccountName: svc-a-new-startup
+      containers:
+      - name: nodejs-app
+        image: "{{ .Values.repository }}:{{ .Values.imageTag }}"
+        ports:
+        - containerPort: 3000
+        env:
+        - name: APP_TABLE_NAME
+          value: {{ .Values.tableName | quote }}
+        - name: APP_TOPIC_ARN
+          value: "{{ .Values.topicArn }}"
+        - name: REGION
+          value: "{{ .Values.region }}"
+      - name: x-ray-daemon
+        image: public.ecr.aws/xray/aws-xray-daemon:latest
+        ports: 
+        - containerPort: 2000
+        # Need to set this because IMDS not available on Fargate 
+        env:
+        - name: AWS_REGION
+          value: "{{ .Values.region }}"
