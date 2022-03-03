@@ -1,0 +1,34 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - echo "[+] Install dependencies - helm, tree"
+      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - yum install tree -y
+      - aws eks --region $REGION update-kubeconfig --name $CLUSTER_NAME
+  pre_build:
+    commands:
+      - echo "[+] Pre-Build Steps...."
+      - helm version
+      - tree a-new-startup-app
+      # Get the latest image tag - a specific imagetag, not latest. This sorts by imagePushedAt 
+      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --region $REGION | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' | grep -v latest | tail -1)
+      - echo $IMAGE_TAG
+      # Put it in the values.yaml file - so the template will use it.
+      # NOTE: YAML does NOT like a colon followed by a space.  Leave the line below as-is
+      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> myapp/values.yaml
+      - cat a-new-startup-app/values.yaml
+      # Run a dry-run first.
+      - helm upgrade --install --debug --dry-run myrelease a-new-startup-app
+  build:
+    commands:
+      - echo "[+] Deploying via helm ..."
+      - helm upgrade --install myrelease a-new-startup-app
+      - helm status myrelease
+  post_build:
+    commands:
+      # Done!
+      - echo "Processing completed on `date`"
