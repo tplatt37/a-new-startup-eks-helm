@@ -1,0 +1,34 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - echo "[+] Install dependencies - helm, tree"
+      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - yum install tree -y
+  pre_build:
+    commands:
+      - echo "[+] Pre-Build Steps...."
+      # Nothing really - just showing that we have Helm installed...
+      - helm version
+  build:
+    commands:
+      - echo "[+] Checking Helm Chart..."
+      - tree a-new-startup-app
+      # This command generates the manifest files used, but without any connectivity to k8s cluster
+      # It's useful as a rough check that the Chart will work, but it is not exact.
+      # Render manifest YAML
+      - cat a-new-startup-app/values.yaml
+      - helm template template-test-only a-new-startup-app
+  post_build:
+    commands:
+      # Do a simple helm lint as a "build"
+      - helm lint a-new-startup-app
+      - echo "Processing completed on `date`"
+
+artifacts:
+  files:
+    - a-new-startup-app/**/*
+  discard-paths: no
