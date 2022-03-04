@@ -5,19 +5,33 @@ phases:
     runtime-versions:
       python: 3.8
     commands:
-      - echo "[+] Install dependencies - helm, tree"
+      - echo "[+] Install dependencies - helm, tree, eksctl"
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      - yum install tree -y
+      #- yum install tree -y
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
-      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region 
+      
+      # Install eksctl
+      - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+      - mv /tmp/eksctl /usr/local/bin
+      - eksctl version
   pre_build:
     commands:
       - echo "[+] Pre-Build Steps...."
       - helm version
-      - tree a-new-startup-app
+
+      # Make sure iamserviceaccount exists.
+      # Get the TABLE_NAME from the backend stack export
+      - EXPORT_NAME=$PREFIX-AppPolicy
+      - POLICY_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
+      - eksctl create iamserviceaccount --cluster=$CLUSTER --name=svc-$PREFIX --namespace=$NAMESPACE --attach-policy-arn=$POLICY_ARN --approve
+
+      #- tree a-new-startup-app
+
       # Get the latest image tag - a specific imagetag, not latest. This sorts by imagePushedAt 
       - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --image-ids imageTag=latest --query "imageDetails[0].imageTags" --output text | sed 's/latest//g' | xargs)
       - echo $IMAGE_TAG
+
       # Put it in the values.yaml file - so the template will use it.
       # NOTE: YAML does NOT like a colon followed by a space.  Leave the lines below as-is
       - ACCTID_WITH_QUOTES="\"$ACCOUNT_ID\""
@@ -26,11 +40,21 @@ phases:
       - printf  '\naccountId%s %s' ':' $ACCTID_WITH_QUOTES > a-new-startup-app/values.yaml
       - printf  '\nregion%s %s' ':' $AWS_DEFAULT_REGION >> a-new-startup-app/values.yaml
       - printf  '\nrepoName%s %s' ':' $ECR_REPO_NAME >> a-new-startup-app/values.yaml
-      - printf  '\ntableName%s %s' ':' 'a-new-startup-dev' >> a-new-startup-app/values.yaml
-      - printf  '\ntopicArn%s %s' ':' 'topic_arn' >> a-new-startup-app/values.yaml
+
+      # Get the TABLE_NAME from the backend stack export
+      - EXPORT_NAME=$PREFIX-TableName
+      - TABLE_NAME=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
+      - printf  '\ntableName%s %s' ':' $TABLE_NAME >> a-new-startup-app/values.yaml
+
+      # Get the TOPIC_ARN from the backend stack export
+      - EXPORT_NAME=$PREFIX-TopicArn
+      - TOPIC_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
+      - printf  '\ntopicArn%s %s' ':' $TOPIC_ARN >> a-new-startup-app/values.yaml
       - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> a-new-startup-app/values.yaml
       - printf  '\nnamespace%s %s' ':' $NAMESPACE >> a-new-startup-app/values.yaml
+      - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> a-new-startup-app/values.yaml
       - cat a-new-startup-app/values.yaml
+
       # Run a dry-run first.
       - helm upgrade --install --debug --dry-run myrelease a-new-startup-app
   build:

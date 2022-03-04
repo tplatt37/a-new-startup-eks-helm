@@ -20,9 +20,8 @@ spec:
       labels:
         app: a-new-startup
     spec:
-      # This should stay commented out for the 06 CI/CD demo
-      # It's used later ...
-      #serviceAccountName: svc-a-new-startup
+      # Run using a serviceaccount (IRSA) so we can get access to DDB/SNS
+      serviceAccountName: {{ .Values.svcAccount }}
       containers:
       - name: nodejs-app
         image: "{{ .Values.accountId }}.dkr.ecr.{{ .Values.region }}.amazonaws.com/{{ .Values.repoName }}:{{ .Values.imageTag }}"
