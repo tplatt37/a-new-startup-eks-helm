@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "{{ .Release.Name }}-a-new-startup"
-  namespace: mynamespace
+  namespace: a-new-startup 
   labels:
-    app: a-new-startup
+    app: "{{ .Values.namespace }}"
 spec:
   replicas: 6
   strategy:

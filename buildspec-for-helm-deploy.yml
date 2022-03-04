@@ -29,6 +29,7 @@ phases:
       - printf  '\ntableName%s %s' ':' 'a-new-startup-dev' >> a-new-startup-app/values.yaml
       - printf  '\ntopicArn%s %s' ':' 'topic_arn' >> a-new-startup-app/values.yaml
       - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> a-new-startup-app/values.yaml
+      - printf  '\nnamespace%s %s' ':' $NAMESPACE >> a-new-startup-app/values.yaml
       - cat a-new-startup-app/values.yaml
       # Run a dry-run first.
       - helm upgrade --install --debug --dry-run myrelease a-new-startup-app
