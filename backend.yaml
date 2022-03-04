@@ -10,7 +10,6 @@ Parameters:
 Resources:
   StartupSignupsTable:
     Type: AWS::DynamoDB::Table
-    Description: A simple key/value table to store the info for anyone interested in our startup.
     Properties:
       BillingMode: 'PAY_PER_REQUEST'
       AttributeDefinitions:
@@ -48,11 +47,11 @@ Resources:
           Resource:
             Fn::GetAtt: [NewSignupQueue, Arn]
           Sid: Allow-SNS-SendMessage
-        Version: '2008-10-17'
+        Version: '2012-10-17'
       Queues:
       - {Ref: NewSignupQueue}
   
-Outputs
+Outputs:
 
   TableName:
     Value: !Ref StartupSignupsTable
