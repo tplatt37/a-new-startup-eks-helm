@@ -19,8 +19,11 @@ phases:
       - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --image-ids imageTag=latest --query "imageDetails[0].imageTags" --output text | sed 's/latest//g' | xargs)
       - echo $IMAGE_TAG
       # Put it in the values.yaml file - so the template will use it.
-      # NOTE: YAML does NOT like a colon followed by a space.  Leave the line below as-is
-      - printf  '\naccountId%s %s' ':' $ACCOUNT_ID > a-new-startup-app/values.yaml
+      # NOTE: YAML does NOT like a colon followed by a space.  Leave the lines below as-is
+      - ACCTID_WITH_QUOTES="\"$ACCOUNT_ID\""
+      # Need to wrap the acctid in quotes, otherwise YAML treats it like scientific notation!
+      - echo $ACCTID_WITH_QUOTES
+      - printf  '\naccountId%s %s' ':' $ACCTID_WITH_QUOTES > a-new-startup-app/values.yaml
       - printf  '\nregion%s %s' ':' $AWS_DEFAULT_REGION >> a-new-startup-app/values.yaml
       - printf  '\nrepoName%s %s' ':' $ECR_REPO_NAME >> a-new-startup-app/values.yaml
       - printf  '\ntableName%s %s' ':' 'a-new-startup-dev' >> a-new-startup-app/values.yaml
