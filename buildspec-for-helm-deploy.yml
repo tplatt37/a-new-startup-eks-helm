@@ -9,7 +9,7 @@ phases:
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       #- yum install tree -y
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
-      - aws eks update-kubeconfig --name $CLUSTER_NAME --region 
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
       
       # Install eksctl
       - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -22,9 +22,9 @@ phases:
 
       # Make sure iamserviceaccount exists.
       # Get the TABLE_NAME from the backend stack export
-      - EXPORT_NAME=$PREFIX-AppPolicy
+      - EXPORT_NAME=$PREFIX-AppManagedPolicy
       - POLICY_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
-      - eksctl create iamserviceaccount --cluster=$CLUSTER --name=svc-$PREFIX --namespace=$NAMESPACE --attach-policy-arn=$POLICY_ARN --approve
+      - eksctl create iamserviceaccount --cluster=$CLUSTER_NAME --name=svc-$PREFIX --namespace=$NAMESPACE --attach-policy-arn=$POLICY_ARN --approve --override-existing-serviceaccounts
 
       #- tree a-new-startup-app
 
