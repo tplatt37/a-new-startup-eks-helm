@@ -25,7 +25,7 @@ spec:
       #serviceAccountName: svc-a-new-startup
       containers:
       - name: nodejs-app
-        image: "{{ .Values.repository }}:{{ .Values.imageTag }}"
+        image: "{{ .Values.accountId }}.dkr.ecr.{{ .Values.region }}.amazonaws.com/{{ .Values.repoName }}:{{ .Values.imageTag }}"
         ports:
         - containerPort: 3000
         env:
