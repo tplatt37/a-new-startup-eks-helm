@@ -8,18 +8,19 @@ phases:
       - echo "[+] Install dependencies - helm, tree"
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - yum install tree -y
-      - aws eks --region $REGION update-kubeconfig --name $CLUSTER_NAME
+      - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
   pre_build:
     commands:
       - echo "[+] Pre-Build Steps...."
       - helm version
       - tree a-new-startup-app
       # Get the latest image tag - a specific imagetag, not latest. This sorts by imagePushedAt 
-      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --region $REGION | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' | grep -v latest | tail -1)
+      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --image-ids imageTag=latest --query "imageDetails[0].imageTags" --output text | sed 's/latest//g' | xargs)
       - echo $IMAGE_TAG
       # Put it in the values.yaml file - so the template will use it.
       # NOTE: YAML does NOT like a colon followed by a space.  Leave the line below as-is
-      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> myapp/values.yaml
+      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> a-new-startup-app/values.yaml
       - cat a-new-startup-app/values.yaml
       # Run a dry-run first.
       - helm upgrade --install --debug --dry-run myrelease a-new-startup-app
