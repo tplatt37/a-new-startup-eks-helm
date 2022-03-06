@@ -34,6 +34,9 @@ spec:
           value: "{{ .Values.topicArn }}"
         - name: REGION
           value: "{{ .Values.region }}"
+          # The code will see this and run with AWS-Xray-Sdk in use.
+        - name: XRAY
+          value: "ON"
       - name: x-ray-daemon
         image: public.ecr.aws/xray/aws-xray-daemon:latest
         ports: 
