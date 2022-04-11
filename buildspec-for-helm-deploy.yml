@@ -50,7 +50,11 @@ phases:
       - EXPORT_NAME=$PREFIX-TopicArn
       - TOPIC_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
       - printf  '\ntopicArn%s %s' ':' $TOPIC_ARN >> a-new-startup-app/values.yaml
-      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG >> a-new-startup-app/values.yaml
+      
+      # imageTag should always be quoted - otherwise YAML might treat an all numeric string as a number
+      - IMAGE_TAG_WITH_QUOTES="\"$IMAGE_TAG\""
+      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG_WITH_QUOTES >> a-new-startup-app/values.yaml
+      
       - printf  '\nnamespace%s %s' ':' $NAMESPACE >> a-new-startup-app/values.yaml
       - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> a-new-startup-app/values.yaml
       - cat a-new-startup-app/values.yaml
