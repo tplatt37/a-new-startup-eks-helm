@@ -6,7 +6,11 @@ phases:
       python: 3.8
     commands:
       - echo "[+] Install dependencies - helm, tree, eksctl"
-      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      
+      # Hardcode install of helm to v3.8.2 due to known issue with v3.9.0 https://github.com/helm/helm/issues/10975
+      - curl -L https://git.io/get_helm.sh | bash -s -- --version v3.8.2
+      #- curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      
       #- yum install tree -y
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
