@@ -5,8 +5,15 @@ phases:
     runtime-versions:
       python: 3.8
     commands:
-      - echo "[+] Install dependencies - helm, tree, eksctl"
+      - echo "[+] Install dependencies - aws cli v2, helm, tree, eksctl"
       
+      # Gotta install AWS CLI v2
+      - pip3 uninstall awscli -y
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip 1> /dev/null
+      - ./aws/install
+      - aws --version
+
       # Hardcode install of helm to v3.8.2 due to known issue with v3.9.0 https://github.com/helm/helm/issues/10975
       - curl -L https://git.io/get_helm.sh | bash -s -- --version v3.8.2
       #- curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
