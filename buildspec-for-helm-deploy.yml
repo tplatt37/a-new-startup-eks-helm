@@ -14,9 +14,9 @@ phases:
       - ./aws/install
       - aws --version
 
-      # Hardcode install of helm to v3.8.2 due to known issue with v3.9.0 https://github.com/helm/helm/issues/10975
-      - curl -L https://git.io/get_helm.sh | bash -s -- --version v3.8.2
-      #- curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      # Use Helm latest. If a specific version is needed do this instead: curl -L https://git.io/get_helm.sh | bash -s -- --version v3.8.2
+      - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - helm version
       
       #- yum install tree -y
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
