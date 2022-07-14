@@ -40,7 +40,7 @@ phases:
       #- tree a-new-startup-app
 
       # Get the latest image tag - a specific imagetag, not latest. This sorts by imagePushedAt 
-      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --image-ids imageTag=latest --query "imageDetails[0].imageTags" --output text | sed 's/latest//g' | xargs)
+      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' | grep -v latest | tail -1)
       - echo $IMAGE_TAG
 
       # Put it in the values.yaml file - so the template will use it.
