@@ -22,6 +22,10 @@ spec:
     spec:
       # Run using a serviceaccount (IRSA) so we can get access to DDB/SNS
       serviceAccountName: {{ .Values.svcAccount }}
+      # Do not run as root - that's a bad practice
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
       containers:
       - name: nodejs-app
         image: "{{ .Values.accountId }}.dkr.ecr.{{ .Values.region }}.amazonaws.com/{{ .Values.repoName }}:{{ .Values.imageTag }}"
