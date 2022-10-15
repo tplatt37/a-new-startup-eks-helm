@@ -26,6 +26,7 @@ spec:
       # The nodejs container image for the app has a system user (app) with id 101 belonging to group app (1001). See Dockerfile for details.
       # X-Ray doesn't care what user / group you use.
       securityContext:
+        runAsNonRoot: true  # This causes kubelet to check and make sure root isn't being used...
         runAsUser: 101
         runAsGroup: 1001
       containers:
