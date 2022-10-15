@@ -23,9 +23,11 @@ spec:
       # Run using a serviceaccount (IRSA) so we can get access to DDB/SNS
       serviceAccountName: {{ .Values.svcAccount }}
       # Do not run as root - that's a bad practice
+      # The nodejs container image for the app has a system user (app) with id 101 belonging to group app (1001)
+      # X-Ray doesn't care what user / group you use.
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 3000
+        runAsUser: 101
+        runAsGroup: 1001
       containers:
       - name: nodejs-app
         image: "{{ .Values.accountId }}.dkr.ecr.{{ .Values.region }}.amazonaws.com/{{ .Values.repoName }}:{{ .Values.imageTag }}"
