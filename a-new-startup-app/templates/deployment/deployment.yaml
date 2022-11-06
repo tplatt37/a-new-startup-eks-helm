@@ -27,7 +27,7 @@ spec:
       # X-Ray doesn't care what user / group you use.
       securityContext:
         runAsNonRoot: true  # This causes kubelet to check and make sure root isn't being used...
-        runAsUser: 101
+        runAsUser: 101 # k8s needs a numeric user to check for rootness
         runAsGroup: 1001
       containers:
       - name: nodejs-app
