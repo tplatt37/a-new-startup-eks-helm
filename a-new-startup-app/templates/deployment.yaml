@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # NOTE: There's no namespace here. Best practice with a helm chart is to specify 
-  # that with --namespace upon install
+  # NOTE: Best practice with a helm chart is to specify namespace using --namespace option
+  namespace: "{{ .Release.Namespace }}"
   name: "{{ .Release.Name }}-a-new-startup"
   labels:
     app: "{{ .Release.Name }}"

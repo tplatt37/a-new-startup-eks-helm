@@ -67,16 +67,15 @@ phases:
       - IMAGE_TAG_WITH_QUOTES="\"$IMAGE_TAG\""
       - printf  '\nimageTag%s %s' ':' $IMAGE_TAG_WITH_QUOTES >> a-new-startup-app/values.yaml
       
-      - printf  '\nnamespace%s %s' ':' $NAMESPACE >> a-new-startup-app/values.yaml
       - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> a-new-startup-app/values.yaml
       - cat a-new-startup-app/values.yaml
 
       # Run a dry-run first.
-      - helm upgrade --install --debug --dry-run cicd-release a-new-startup-app
+      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run cicd-release a-new-startup-app
   build:
     commands:
       - echo "[+] Deploying via helm ..."
-      - helm upgrade --install cicd-release a-new-startup-app
+      - helm upgrade --install --namespace $NAMESPACE cicd-release a-new-startup-app
       - helm status cicd-release
   post_build:
     commands:

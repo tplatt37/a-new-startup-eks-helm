@@ -1,8 +1,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  # NOTE: Best practice with a helm chart is to specify namespace using --namespace option
+  namespace: "{{ .Release.Namespace }}"
   name: ingress-a-new-startup
-  namespace: "{{ .Values.namespace }}"
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing

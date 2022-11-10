@@ -21,7 +21,7 @@ phases:
       # It's useful as a rough check that the Chart will work, but it is not exact.
       # Render manifest YAML
       - cat a-new-startup-app/values.yaml
-      - helm template template-test-only a-new-startup-app
+      - helm template template-test-only a-new-startup-app --namespace test
   post_build:
     commands:
       # Do a simple helm lint as a "build"
