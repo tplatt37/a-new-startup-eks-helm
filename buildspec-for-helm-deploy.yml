@@ -35,6 +35,8 @@ phases:
       # Get the TABLE_NAME from the backend stack export
       - EXPORT_NAME=$PREFIX-AppManagedPolicy
       - POLICY_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
+      
+      # NOTE: NAMESPACE environment variable is set via the CodeBuild project.
       - eksctl create iamserviceaccount --cluster=$CLUSTER_NAME --name=svc-$PREFIX --namespace=$NAMESPACE --attach-policy-arn=$POLICY_ARN --approve --override-existing-serviceaccounts
 
       #- tree a-new-startup-app
