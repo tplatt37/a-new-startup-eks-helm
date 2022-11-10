@@ -76,7 +76,7 @@ phases:
     commands:
       - echo "[+] Deploying via helm ..."
       - helm upgrade --install --namespace $NAMESPACE cicd-release a-new-startup-app
-      - helm status cicd-release
+      - helm status cicd-release --namespace $NAMESPACE
   post_build:
     commands:
       # Done!
