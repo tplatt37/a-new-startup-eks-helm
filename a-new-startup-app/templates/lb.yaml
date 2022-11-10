@@ -5,6 +5,8 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
   name: lb-a-new-startup
 spec:
+  # No annotations, so this will be provisioned by the in-tree service controller
+  # and therefore a CLB (Classic Load Balancer) will be provisioned.
   type: LoadBalancer
   selector:
     app: a-new-startup
