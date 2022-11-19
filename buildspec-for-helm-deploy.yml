@@ -40,9 +40,11 @@ phases:
       - eksctl create iamserviceaccount --cluster=$CLUSTER_NAME --name=svc-$PREFIX --namespace=$NAMESPACE --attach-policy-arn=$POLICY_ARN --approve --override-existing-serviceaccounts
 
       # Get the latest image tag - a specific imagetag, not latest. This sorts by imagePushedAt 
-      # NOTE: we use --raw-output on the jq part ot get the value without quotes
+      # NOTE: we use --raw-output on the jq part to get the value without quotes
+      # ECR_REPO_NAME is set in the Environment Variables for the Build Project (see cloudformation template)
+      - echo "ECR_REPO_NAME=$ECR_REPO_NAME"
       - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' --raw-output | grep -v latest | tail -1)
-      - echo $IMAGE_TAG
+      - echo "IMAGE_TAG=$IMAGE_TAG"
 
       # Put it in the values.yaml file - so the template will use it.
       # NOTE: YAML does NOT like a colon followed by a space.  Leave the lines below as-is
