@@ -27,6 +27,7 @@ phases:
       - mv /tmp/eksctl /usr/local/bin
       - eksctl version
   pre_build:
+    on-failure: ABORT
     commands:
       - echo "[+] Pre-Build Steps...."
       - helm version
@@ -45,6 +46,9 @@ phases:
       - echo "ECR_REPO_NAME=$ECR_REPO_NAME"
       - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' --raw-output | grep -v latest | tail -1)
       - echo "IMAGE_TAG=$IMAGE_TAG"
+
+      # If no image available at this time, just bale out.
+      - if [[ $IMAGE_TAG == "" ]]; then echo "IMAGE_TAG is blank ($IMAGE_TAG)... exiting."; exit 1; fi 
 
       # Put it in the values.yaml file - so the template will use it.
       # NOTE: YAML does NOT like a colon followed by a space.  Leave the lines below as-is
@@ -75,6 +79,7 @@ phases:
       # Run a dry-run first.
       - helm upgrade --install --namespace $NAMESPACE --debug --dry-run cicd-release a-new-startup-app
   build:
+    on-failure: ABORT
     commands:
       - echo "[+] Deploying via helm ..."
       - helm upgrade --install --namespace $NAMESPACE cicd-release a-new-startup-app
