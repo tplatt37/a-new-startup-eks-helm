@@ -44,7 +44,8 @@ phases:
       # NOTE: we use --raw-output on the jq part to get the value without quotes
       # ECR_REPO_NAME is set in the Environment Variables for the Build Project (see cloudformation template)
       - echo "ECR_REPO_NAME=$ECR_REPO_NAME"
-      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' --raw-output | grep -v latest | tail -1)
+      # We only want TAGGED images. There may be untagged images if we "release change" in CodePipeline (because two images can't use the same git commit hash!)
+      - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --filter "tagStatus=TAGGED" | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' --raw-output | grep -v latest | tail -1)
       - echo "IMAGE_TAG=$IMAGE_TAG"
 
       # If no image available at this time, just bale out.
