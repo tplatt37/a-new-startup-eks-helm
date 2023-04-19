@@ -5,14 +5,17 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
   name: lb-a-new-startup
   
-  # These annotations ensure that the AWS Load Balancer Controller will handle provisioning , as opposed to the in-tree controller (which is deprecated)
+  # These annotations let us determine specifics of the NLB that AWS Load Balancer Controller will provision
+  # (It WILL be an NLB, assuming you are using AWS Load Balancer Controller 2.5.0 or later)
   # See here: https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html
   annotations:
 
     # See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/service/annotations/
     service.beta.kubernetes.io/aws-load-balancer-type: external
     # Can be ip (individual Pod IPs) or instance (NodePorts on the worker nodes)
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    # instance mode works better for demos - the targets (nodeports) are stable, whereas with ip mode you have pod ips that
+    # are transient - and you have to carefully coordinate pod shutdown, deregistration delay, health checks etc.
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
     service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 
     # You can limit inbound IPs using this (Replace 0.0.0.0/0 with a specific CIDR.)
