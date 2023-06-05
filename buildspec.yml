@@ -6,15 +6,13 @@ phases:
       # assume using Ubuntu/standard 7.0 image
       python: 3.11
     commands:
-      - echo "[+] Install dependencies - helm, tree"
+      - echo "[+] Install dependencies - helm"
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      - apt-get install tree -y
       # We want a record of which version of helm we are using.
       - helm version
   pre_build:
     commands:
       - echo "[+] Checking Helm Chart..."
-      - tree a-new-startup-app
       #
       # Do a simple helm lint as a build. This checks syntax and ensures the chart is well-formed
       - helm lint a-new-startup-app
