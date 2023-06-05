@@ -3,9 +3,9 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.8
+      python: 3.11
     commands:
-      - echo "[+] Install dependencies - helm, treem"
+      - echo "[+] Install dependencies - helm, tree"
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - yum install tree -y
       # We want a record of which version of helm we are using.
