@@ -46,7 +46,7 @@ phases:
       # If no image available at this time, just bale out.
       - if [[ $IMAGE_TAG == "" ]]; then echo "IMAGE_TAG is blank ($IMAGE_TAG)... exiting."; exit 1; fi 
 
-      # Put it in the values.yaml file - so the template will use it.
+      # Create a custom values.yaml file -and we'll pass that in when we install using --values option.
       # Alternatively we could use the helm --set command line parameter to override these values, 
       # but this imakes things easier to debug.
       #
@@ -54,36 +54,36 @@ phases:
       - ACCTID_WITH_QUOTES="\"$ACCOUNT_ID\""
       # Need to wrap the acctid in quotes, otherwise YAML treats it like scientific notation!
       - echo $ACCTID_WITH_QUOTES
-      - printf  '\naccountId%s %s' ':' $ACCTID_WITH_QUOTES > a-new-startup/values.yaml
-      - printf  '\nregion%s %s' ':' $AWS_DEFAULT_REGION >> a-new-startup/values.yaml
-      - printf  '\nrepoName%s %s' ':' $ECR_REPO_NAME >> a-new-startup/values.yaml
+      - printf  '\naccountId%s %s' ':' $ACCTID_WITH_QUOTES > values-deploy.yaml
+      - printf  '\nregion%s %s' ':' $AWS_DEFAULT_REGION >> values-deploy.yaml
+      - printf  '\nrepoName%s %s' ':' $ECR_REPO_NAME >> values-deploy.yaml
 
       # Get the TABLE_NAME from the backend stack export
       - EXPORT_NAME=$PREFIX-TableName
       - TABLE_NAME=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
-      - printf  '\ntableName%s %s' ':' $TABLE_NAME >> a-new-startup/values.yaml
+      - printf  '\ntableName%s %s' ':' $TABLE_NAME >> values-deploy.yaml
 
       # Get the TOPIC_ARN from the backend stack export
       - EXPORT_NAME=$PREFIX-TopicArn
       - TOPIC_ARN=$(aws cloudformation list-exports --query "Exports[?Name=='$EXPORT_NAME'].Value" --output text)
-      - printf  '\ntopicArn%s %s' ':' $TOPIC_ARN >> a-new-startup/values.yaml
+      - printf  '\ntopicArn%s %s' ':' $TOPIC_ARN >> values-deploy.yaml
       
       # imageTag should always be quoted - otherwise YAML might treat an all numeric string as a number
       - IMAGE_TAG_WITH_QUOTES="\"$IMAGE_TAG\""
-      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG_WITH_QUOTES >> a-new-startup/values.yaml
+      - printf  '\nimageTag%s %s' ':' $IMAGE_TAG_WITH_QUOTES >> values-deploy.yaml
       
-      - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> a-new-startup/values.yaml
-      - cat a-new-startup-app/values.yaml
+      - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> values-deploy.yaml
+      - cat values-deploy.yaml
 
       # Run a dry-run first.
       # Please note this is using the local directory a-new-startup-app. It is not pulling the chart
       # from a helm repo (for simplicity)
-      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run cicd-release a-new-startup
+      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-release a-new-startup 
   build:
     on-failure: ABORT
     commands:
       - echo "[+] Deploying via helm ..."
-      - helm upgrade --install --namespace $NAMESPACE cicd-release a-new-startup
+      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-release a-new-startup
       - helm status cicd-release --namespace $NAMESPACE
   post_build:
     commands:
