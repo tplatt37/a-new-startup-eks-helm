@@ -15,24 +15,24 @@ phases:
       - echo "[+] Checking Helm Chart..."
       #
       # Do a simple helm lint as a build. This checks syntax and ensures the chart is well-formed
-      - helm lint a-new-startup-app
+      - helm lint a-new-startup
       #
       # This command generates the manifest files used, but no connectivity to k8s cluster needed
       # It's useful as a rough check that the Chart will work, but it is not exact.
       # Render manifest YAML
-      - cat a-new-startup-app/values.yaml
-      - helm template template-test-only a-new-startup-app --namespace test
+      - cat a-new-startup/values.yaml
+      - helm template template-test-only a-new-startup --namespace test
   build:
     commands:
       #
       # This produces a tgz (gzipped tarball) that you would publish to a Helm repository.
-      - helm package a-new-startup-app 
+      - helm package a-new-startup
   post_build:
     commands:
       - echo "Build Complete."
       - echo "Processing completed on `date`"
 artifacts:
   files:
-    - a-new-startup-app/**/*
+    - a-new-startup/**/*
     - a-new-startup*.tgz
   discard-paths: no
