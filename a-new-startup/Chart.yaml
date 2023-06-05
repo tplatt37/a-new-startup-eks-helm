@@ -1,0 +1,5 @@
+apiVersion: v2
+name: a-new-startup
+description: A Helm chart for the a-new-startup application. Used by CI/CD process. Assumes a IRSA service account is being created separately and referenced in the values.yaml
+version: 1.0.0
+appVersion: "1.0"

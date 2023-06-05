@@ -1,5 +1,0 @@
-apiVersion: v2
-name: a-new-startup
-description: A Helm chart for the a-new-startup applicationn
-version: 1.0.0
-appVersion: "1.0"

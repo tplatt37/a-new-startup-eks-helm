@@ -37,6 +37,12 @@ spec:
         image: "{{ .Values.accountId }}.dkr.ecr.{{ .Values.region }}.amazonaws.com/{{ .Values.repoName }}:{{ .Values.imageTag }}"
         ports:
         - containerPort: 3000
+        resources:
+          requests:
+            cpu: "250m"
+          limits:
+            cpu: "500m"
+
         env:
         - name: APP_TABLE_NAME
           value: {{ .Values.tableName | quote }}
@@ -51,6 +57,12 @@ spec:
         image: public.ecr.aws/xray/aws-xray-daemon:latest
         ports: 
         - containerPort: 2000
+        resources:
+          requests:
+            cpu: "250m"
+          limits:
+            cpu: "500m"
+
         # Need to set this because IMDS not available on Fargate 
         env:
         - name: AWS_REGION

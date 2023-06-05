@@ -1,0 +1,10 @@
+accountId: "123456789012"
+region: "us-east-1"
+repoName: "a-new-startup-eks"
+tableName: "a-new-startup-dev"
+topicArn: "arn:aws:sns:us-east-1:123456789012:a-new-startup-dev"
+imageTag: "000000"
+# This IRSA service account must be created via the build process or manually.
+# It needs to grant access to the appropriate DynamoDB table, SNS topic, etc.
+# For the CI/CD demo - this is done in the buildspec, before helm is used to deploy.
+svcAccount: "svc-a-new-startup-eks"
