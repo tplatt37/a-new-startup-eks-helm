@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   # NOTE: Best practice with a helm chart is to specify namespace using --namespace option
   namespace: "{{ .Release.Namespace }}"
-  name: ingress-a-new-startup
+  name: "{{ .Release.Name }}-ingress"
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing

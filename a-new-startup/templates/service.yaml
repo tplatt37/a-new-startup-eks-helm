@@ -3,7 +3,7 @@ kind: Service
 metadata:
   # NOTE: Best practice with a helm chart is to specify namespace using --namespace option
   namespace: "{{ .Release.Namespace }}"
-  name: svc-a-new-startup
+  name: "{{ .Release.Name }}-nodeport"
 spec:
   type: NodePort
   selector:

@@ -8,3 +8,6 @@ imageTag: "000000"
 # It needs to grant access to the appropriate DynamoDB table, SNS topic, etc.
 # For the CI/CD demo - this is done in the buildspec, before helm is used to deploy.
 svcAccount: "svc-a-new-startup-eks"
+#
+# Optional - will default to 6 (see templates)
+# replicas: 3

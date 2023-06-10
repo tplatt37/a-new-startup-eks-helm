@@ -3,7 +3,7 @@ kind: Service
 metadata:
   # NOTE: Best practice with a helm chart is to specify namespace using --namespace option
   namespace: "{{ .Release.Namespace }}"
-  name: lb-a-new-startup
+  name: "{{ .Release.Name }}-lb"
   
   # These annotations let us determine specifics of the NLB that AWS Load Balancer Controller will provision
   # (It WILL be an NLB, assuming you are using AWS Load Balancer Controller 2.5.0 or later)

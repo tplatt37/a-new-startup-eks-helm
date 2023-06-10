@@ -7,7 +7,11 @@ metadata:
   labels:
     app: "{{ .Release.Name }}"
 spec:
+  {{ if .Values.replicas }}
+  replicas: {{ .Values.replicas }}
+  {{ else }}
   replicas: 6
+  {{ end }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
