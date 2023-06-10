@@ -1,9 +1,10 @@
 version: 0.2
 
+# This uses the helm chart to deploy to some cluster 
+# assume using Ubuntu/standard 7.0 image
+    
 phases:
   install:
-    runtime-versions:
-      python: 3.11
     commands:
       - echo "[+] Install dependencies - helm, eksctl"
       - aws --version
@@ -17,16 +18,16 @@ phases:
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
       
-      # Install eksctl
+      # Install eksctl (needed to ensure the IRSA account exists)
       - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
       - mv /tmp/eksctl /usr/local/bin
       - eksctl version
+      
   pre_build:
     on-failure: ABORT
     commands:
       - echo "[+] Pre-Build Steps...."
-      - helm version
-
+     
       # Make sure iamserviceaccount exists.
       # Get the TABLE_NAME from the backend stack export
       - EXPORT_NAME=$PREFIX-AppManagedPolicy
@@ -43,7 +44,7 @@ phases:
       - IMAGE_TAG=$(aws ecr describe-images --repository-name $ECR_REPO_NAME --filter "tagStatus=TAGGED" | jq '.imageDetails|=sort_by(.imagePushedAt)|.imageDetails[].imageTags[]' --raw-output | grep -v latest | tail -1)
       - echo "IMAGE_TAG=$IMAGE_TAG"
 
-      # If no image available at this time, just bale out.
+      # If no image available at this time, just bail out.
       - if [[ $IMAGE_TAG == "" ]]; then echo "IMAGE_TAG is blank ($IMAGE_TAG)... exiting."; exit 1; fi 
 
       # Create a custom values.yaml file -and we'll pass that in when we install using --values option.
@@ -78,13 +79,27 @@ phases:
       # Run a dry-run first.
       # Please note this is using the local directory a-new-startup-app. It is not pulling the chart
       # from a helm repo (for simplicity)
-      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-release a-new-startup 
+      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-install a-new-startup 
+      
+      #
   build:
     on-failure: ABORT
     commands:
       - echo "[+] Deploying via helm ..."
-      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-release a-new-startup
-      - helm status cicd-release --namespace $NAMESPACE
+      
+      # Finally! Let's install.  Remember that helm will use ~/.kube/config
+      #
+      # Installation will be named "cicd-install"
+      # NOTE: You can use --wait and --timeout options to ensure all resources are created and running successfully, but this can cause intermittent pipeline failures due to slow image pulls,etc.
+      # You can also use --atomic so that helm will re-install the prior release if something fails.
+      # You *probably* want to use --atomic when deploying to a prod environment
+      #
+      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install a-new-startup
+      
+      # Status check!
+      - helm status cicd-install --namespace $NAMESPACE
+      
+      
   post_build:
     commands:
       # Done!
