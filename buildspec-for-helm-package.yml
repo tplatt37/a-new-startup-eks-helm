@@ -34,6 +34,5 @@ phases:
       - echo "Processing completed on `date`"
 artifacts:
   files:
-    - a-new-startup/**/*
     - a-new-startup*.tgz
   discard-paths: no

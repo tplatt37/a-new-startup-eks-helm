@@ -92,13 +92,17 @@ phases:
       # Installation will be named "cicd-install"
       # NOTE: You can use --wait and --timeout options to ensure all resources are created and running successfully, but this can cause intermittent pipeline failures due to slow image pulls,etc.
       # You can also use --atomic so that helm will re-install the prior release if something fails.
-      # You *probably* want to use --atomic when deploying to a prod environment
+      # You *probably* want to use --atomic and --timeout when deploying to a prod environment
       #
       - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install a-new-startup
       
+      # If you are using --atomic or --wait, you might want to also run any tests included in the package via:
+      # - helm test cicd-install
+      #
+      
       # Status check!
       - helm status cicd-install --namespace $NAMESPACE
-      
+      - helm history cicd-install --namespace $NAMESPACE
       
   post_build:
     commands:
