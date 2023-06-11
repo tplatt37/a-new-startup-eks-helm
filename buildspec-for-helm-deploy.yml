@@ -49,7 +49,7 @@ phases:
       - echo "IMAGE_TAG=$IMAGE_TAG"
 
       # If no image available at this time, just bail out.
-      - if [ "$IMAGE_TAG" -eq "" ]; then echo" IMAGE_TAG is blank ($IMAGE_TAG)... exiting."; exit 1; fi
+      - if [ "$IMAGE_TAG" = "" ]; then echo" IMAGE_TAG is blank ($IMAGE_TAG)... exiting."; exit 1; fi
       
       # Create a custom values.yaml file -and we'll pass that in when we install using --values option.
       # Alternatively we could use the helm --set command line parameter to override these values, 
