@@ -1,6 +1,6 @@
 version: 0.2
 
-# This is how we lint/test/package the Helm chart itself.
+# This is how we lint/test/package/push the Helm chart itself.
 # assume using Ubuntu/standard 7.0 image
     
 phases:
@@ -11,27 +11,62 @@ phases:
       # We want a record of which version of helm we are using.
       - helm version
       
+      # Install helm-s3 plugin so helm can use s3 protocol 
+      - helm plugin install https://github.com/hypnoglow/helm-s3.git
+      - helm s3 help
+      
   pre_build:
     commands:
+    
+      - echo "[+] Make sure Helm Chart Repo has been initialized previously"
+      # This environment variable is set in the Build Project definition.
+      # We'll be pushing the chart here.
+      - echo "HELM_CHART_REPO=$HELM_CHART_REPO"
+      # Make sure the S3 Chart Repo is ready, there will be an index.yaml file if it has been initialized.
+      - REPO_READY=$(aws s3 ls s3://$HELM_CHART_REPO/charts/a-new-startup/index.yaml | wc -l)
+      - echo "REPO_READY=$REPO_READY"
+      - if [[ "$REPO_READY" -eq 0 ]]; then
+      -   helm s3 init s3://$HELM_CHART_REPO/charts/a-new-startup
+      - else
+      -   echo "Helm Chart Repo $HELM_CHART_REPO appears ready."
+      - fi
+      
+      - helm repo add a-new-startup s3://$HELM_CHART_REPO/charts/a-new-startup/
+
       - echo "[+] Checking Helm Chart..."
       #
       # Do a simple helm lint as a build. This checks syntax and ensures the chart is well-formed
-      - helm lint a-new-startup
+      - helm lint ./a-new-startup
       #
       # This command generates the manifest files used, but no connectivity to k8s cluster needed
       # It's useful as a rough check that the Chart will work, but it is not exact.
       # Render manifest YAML
       - cat a-new-startup/values.yaml
-      - helm template template-test-only a-new-startup --namespace test
+      - helm template template-test-only ./a-new-startup --namespace test
+      
   build:
     commands:
       #
-      # This produces a tgz (gzipped tarball) that you would publish to a Helm repository.
-      - helm package a-new-startup
+      # Make sure no extraneous tgz files.
+      - rm -f *.tgz
+      
+      # This produces a tgz (gzipped tarball) that we'll push to a Helm Chart repository.
+      - helm package ./a-new-startup
+      
+      # There should only be one .tgz file.
+      - CHART_FILE=$(ls *.tgz)
+      - echo "CHART_FILE=$CHART_FILE"
+      
   post_build:
     commands:
+      
+      # Push to the S3 Chart Repo
+      # --force let's us overwrite existing version - which would fail otherwise.
+      - helm s3 push --force ./$CHART_FILE a-new-startup 
+    
       - echo "Build Complete."
       - echo "Processing completed on `date`"
+      
 artifacts:
   files:
     - a-new-startup*.tgz

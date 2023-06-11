@@ -6,17 +6,16 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "[+] Install dependencies - helm, eksctl"
+      - echo "[+] Install dependencies - helm, helm-s3, eksctl"
       - aws --version
       
       # Use Helm latest. If a specific version is needed do this instead: curl -L https://git.io/get_helm.sh | bash -s -- --version v3.8.2
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - helm version
       
-      # Make sure we are pointed to the cluster.  The IAM role being used to run this must have k8s RBAC perms!
-      # (and it should as this is setup by the a-new-startup-eks-cicd install.sh)
-      - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
-      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+      # Install helm-s3 plugin so helm can use s3 protocol 
+      - helm plugin install https://github.com/hypnoglow/helm-s3.git
+      - helm s3 help
       
       # Install eksctl (needed to ensure the IRSA account exists)
       - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -27,7 +26,12 @@ phases:
     on-failure: ABORT
     commands:
       - echo "[+] Pre-Build Steps...."
-     
+    
+      # Make sure we are pointed to the cluster.  The IAM role being used to run this must have k8s RBAC perms!
+      # (and it should as this is setup by the a-new-startup-eks-cicd install.sh)
+      - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
+
       # Make sure iamserviceaccount exists.
       # Get the TABLE_NAME from the backend stack export
       - EXPORT_NAME=$PREFIX-AppManagedPolicy
@@ -76,12 +80,16 @@ phases:
       - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> values-deploy.yaml
       - cat values-deploy.yaml
 
+      # CHART_REPO_NAME is set via Environment Variable in Build Project.
+      # This is where the chart is coming from.
+      - echo "HELM_CHART_REPO=$HELM_CHART_REPO"
+      - helm repo add a-new-startup s3://$HELM_CHART_REPO/stable/a-new-startup
+      - helm repo list
+
       # Run a dry-run first.
-      # Please note this is using the local directory a-new-startup-app. It is not pulling the chart
-      # from a helm repo (for simplicity)
-      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-install a-new-startup 
+      # We're pulling the chart from the Chart Repo. This will automatically use the latest version.
+      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-install $HELM_CHART_REPO/a-new-startup 
       
-      #
   build:
     on-failure: ABORT
     commands:
@@ -94,7 +102,7 @@ phases:
       # You can also use --atomic so that helm will re-install the prior release if something fails.
       # You *probably* want to use --atomic and --timeout when deploying to a prod environment
       #
-      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install a-new-startup
+      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install $HELM_CHART_REPO/a-new-startup
       
       # If you are using --atomic or --wait, you might want to also run any tests included in the package via:
       # - helm test cicd-install
