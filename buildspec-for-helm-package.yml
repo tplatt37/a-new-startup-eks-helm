@@ -25,7 +25,7 @@ phases:
       # Make sure the S3 Chart Repo is ready, there will be an index.yaml file if it has been initialized.
       - REPO_READY=$(aws s3 ls s3://$HELM_CHART_REPO/charts/a-new-startup/index.yaml | wc -l)
       - echo "REPO_READY=$REPO_READY"
-      - if [[ "$REPO_READY" -eq 0 ]]; then helm s3 init s3://$HELM_CHART_REPO/charts/a-new-startup; fi
+      - if [ "$REPO_READY" -eq 0 ]; then helm s3 init s3://$HELM_CHART_REPO/charts/a-new-startup; fi
       
       - helm repo add a-new-startup s3://$HELM_CHART_REPO/charts/a-new-startup/
 
