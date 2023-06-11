@@ -83,7 +83,7 @@ phases:
       # CHART_REPO_NAME is set via Environment Variable in Build Project.
       # This is where the chart is coming from.
       - echo "HELM_CHART_REPO=$HELM_CHART_REPO"
-      - helm repo add a-new-startup s3://$HELM_CHART_REPO/stable/a-new-startup
+      - helm repo add a-new-startup s3://$HELM_CHART_REPO/charts/a-new-startup
       - helm repo list
 
       # Run a dry-run first.
