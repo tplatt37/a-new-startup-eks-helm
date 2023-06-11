@@ -82,14 +82,14 @@ phases:
 
       # CHART_REPO_NAME is set via Environment Variable in Build Project.
       # This is where the chart is coming from.
-      # Note that locally we are referring to the Chart Repo as "demo"
+      # Note that locally we are referring to the Chart Repo as "demo-repo"
       - echo "HELM_CHART_REPO=$HELM_CHART_REPO"
-      - helm repo add demo s3://$HELM_CHART_REPO/charts/a-new-startup
+      - helm repo add demo-repo s3://$HELM_CHART_REPO/charts/a-new-startup
       - helm repo list
 
       # Run a dry-run first.
       # We're pulling the chart from the Chart Repo. This will automatically use the latest version.
-      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-install demo/a-new-startup 
+      - helm upgrade --install --namespace $NAMESPACE --debug --dry-run --values values-deploy.yaml cicd-install demo-repo/a-new-startup 
       
   build:
     on-failure: ABORT
@@ -103,7 +103,7 @@ phases:
       # You can also use --atomic so that helm will re-install the prior release if something fails.
       # You *probably* want to use --atomic and --timeout when deploying to a prod environment
       #
-      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install demo/a-new-startup
+      - helm upgrade --install --namespace $NAMESPACE --values values-deploy.yaml cicd-install demo-repo/a-new-startup
       
       # If you are using --atomic or --wait, you might want to also run any tests included in the package via:
       # - helm test cicd-install

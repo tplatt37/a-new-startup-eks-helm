@@ -27,7 +27,7 @@ phases:
       - echo "REPO_READY=$REPO_READY"
       - if [ "$REPO_READY" -eq 0 ]; then helm s3 init s3://$HELM_CHART_REPO/charts/a-new-startup; fi
       
-      - helm repo add a-new-startup s3://$HELM_CHART_REPO/charts/a-new-startup/
+      - helm repo add demo-repo s3://$HELM_CHART_REPO/charts/a-new-startup/
 
       - echo "[+] Checking Helm Chart..."
       #
@@ -58,7 +58,7 @@ phases:
       
       # Push to the S3 Chart Repo
       # --force let's us overwrite existing version - which would fail otherwise.
-      - helm s3 push --force ./$CHART_FILE a-new-startup 
+      - helm s3 push --force ./$CHART_FILE demo-repo
     
       - echo "Build Complete."
       - echo "Processing completed on `date`"
