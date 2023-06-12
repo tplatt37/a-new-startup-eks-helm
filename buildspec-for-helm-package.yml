@@ -6,6 +6,11 @@ version: 0.2
 phases:
   install:
     commands:
+    
+      # Which shell are we using?
+      - echo "Using shell..."
+      - ls -lha $(which sh) 
+      
       - echo "[+] Install dependencies - helm"
       - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       # We want a record of which version of helm we are using.
