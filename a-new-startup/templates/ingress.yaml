@@ -16,6 +16,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: svc-a-new-startup
+                name: "{{ .Release.Name }}-nodeport"
                 port:
                   number: 80
