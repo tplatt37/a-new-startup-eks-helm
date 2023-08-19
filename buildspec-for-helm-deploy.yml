@@ -84,6 +84,11 @@ phases:
       - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> values-deploy.yaml
       - cat values-deploy.yaml
 
+      # Optionally, specify IP CIDRs to restrict access 
+      # If you want to utilize this - set a CIDRIPS environment variable in the BuildProject.
+      echo "CIDRIPS=$CIDRIPS"
+      - if [ "$CIDRIPS" != "" ]; then echo -e "loadBalancerSourceRanges:" >> values-deploy.yaml; echo "$CIDRIPS" | awk -F', ' '{for (i=1; i<=NF; i++) print "  - " $i}' >> values-deploy.yaml; fi
+
       # CHART_REPO_NAME is set via Environment Variable in Build Project.
       # This is where the chart is coming from.
       # Note that locally we are referring to the Chart Repo as "demo-repo"
