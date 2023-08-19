@@ -7,6 +7,15 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+
+    # Can restrct inbound access via:
+    # alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/24, 1.2.3.4/32
+    #
+    {{- if .Values.loadBalancerSourceRanges }}
+    {{- $formattedIPRanges := join ", " .Values.loadBalancerSourceRanges }}
+    alb.ingress.kubernetes.io/inbound-cidrs: {{ $formattedIPRanges }}
+    {{- end }}
+
 spec:
   ingressClassName: alb
   rules:

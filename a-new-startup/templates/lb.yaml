@@ -18,13 +18,8 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
     service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 
-    # You can limit inbound IPs using this (Replace 0.0.0.0/0 with a specific CIDR.)
-    # NLBs don't use security groups. This annotation will cause an INBOUND Rule in the Clusters Node security group to allow traffic in from this IP range.
-    # You *must* have the preserve_client_ip enabled for this to work (The rule requires the client IP).
-    # https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/service/nlb/#security-group
-    # "AWS currently does not support attaching security groups to NLB. To allow inbound traffic from NLB, the controller automatically adds inbound rules to the worker node security groups by default."
-    #service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
-    #service.beta.kubernetes.io/load-balancer-source-ranges: 0.0.0.0/0
+    # Allowed IPs will default to 0.0.0.0/0 unless you override (see loadBalancerSourceRanges)
+    service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "true"
 
 spec:
   # NOTE:
@@ -38,3 +33,14 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 3000
+
+  #
+  # Specify CIDRs allowed to access with this (will otherwse default to 0.0.0.0/0)
+  #loadBalancerSourceRanges:
+  #  - x.x.x.x/x
+  {{- if .Values.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- with .Values.loadBalancerSourceRanges }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}

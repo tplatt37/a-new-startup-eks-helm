@@ -11,3 +11,8 @@ svcAccount: "svc-a-new-startup-eks"
 #
 # Optional - will default to 6 (see templates)
 # replicas: 3
+
+# Optional - Specifying values here will lock down the NLB (Service Type LoadBalancer) and ALB (Ingress) SG to allow inbound from only these ranges:
+# loadBalancerSourceRanges:
+#   - 1.2.3.4/32
+#   - 12.1.14.0/24
