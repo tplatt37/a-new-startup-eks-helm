@@ -36,6 +36,9 @@ phases:
       - echo "Will connect to EKS cluster $CLUSTER_NAME ($AWS_DEFAULT_REGION)"
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
 
+      # Used in naming...
+      - echo "PREFIX=$PREFIX"
+
       # Make sure iamserviceaccount exists.
       # Get the TABLE_NAME from the backend stack export
       - EXPORT_NAME=$PREFIX-AppManagedPolicy
@@ -83,11 +86,12 @@ phases:
 
       # Run using a k8s sa 
       - printf  '\nsvcAccount%s %s' ':' 'svc-'$PREFIX >> values-deploy.yaml
+      - echo " " >> values-deploy.yaml
       
       # Optionally, specify IP CIDRs to restrict access 
       # If you want to utilize this - set a CIDRIPS environment variable in the BuildProject.
       - echo "CIDRIPS=$CIDRIPS"
-      - if [ "$CIDRIPS" != "" ]; then echo -e "\nloadBalancerSourceRanges:" >> values-deploy.yaml; echo "$CIDRIPS" | awk -F',' '{for (i=1; i<=NF; i++) print "  - " $i}' >> values-deploy.yaml; fi
+      - if [ "$CIDRIPS" != "" ]; then echo "\nloadBalancerSourceRanges:" >> values-deploy.yaml; echo "$CIDRIPS" | awk -F',' '{for (i=1; i<=NF; i++) print "  - " $i}' >> values-deploy.yaml; fi
 
       - cat values-deploy.yaml
 
