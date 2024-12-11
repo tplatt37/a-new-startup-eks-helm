@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+# Needed for EKS Auto Mode to properly create Ingress objects with ALB
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app.kubernetes.io/name: LoadBalancerController
+  name: alb
+spec:
+  controller: eks.amazonaws.com/alb
